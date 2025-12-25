@@ -1,8 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import router
+from app.api import router as api_router
+from app.admin import router as admin_router
 
-app = FastAPI(title="Matrix Neural Agent")
+app = FastAPI(title="Matrix Chatbot")
 
 app.add_middleware(
     CORSMiddleware,
@@ -11,7 +12,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(router)
+app.include_router(api_router)
+app.include_router(admin_router)
 
 @app.get("/")
 def health():

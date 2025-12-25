@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Approval Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #020617;
+    }
+
+    th, td {
+      border: 1px solid #334155;
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #020617;
+    }
+
+    tr:nth-child(even) {
+      background: #020617;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      padding: 6px 12px;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+
+    .approve {
+      background: #22c55e;
+      color: #022c22;
+    }
+
+    .reject {
+      background: #ef4444;
+      color: #450a0a;
+    }
+
+    .empty {
+      margin-top: 20px;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>📋 Admin Training Approval</h1>
+
+  {% if rows|length == 0 %}
+    <p class="empty">Tidak ada data yang perlu di-approve.</p>
+  {% else %}
+    <table>
+      <thead>
+        <tr>
+          <th>Pertanyaan User</th>
+          <th>Jawaban Bot</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+        <tr>
+          <td>{{ row.question }}</td>
+          <td>{{ row.answer }}</td>
+          <td>
+            <div class="actions">
+              <form method="post" action="/admin/approve">
+                <input type="hidden" name="index" value="{{ row.index }}">
+                <input type="hidden" name="token" value="{{ token }}">
+                <button class="approve">Approve</button>
+              </form>
+
+              <form method="post" action="/admin/reject">
+                <input type="hidden" name="index" value="{{ row.index }}">
+                <input type="hidden" name="token" value="{{ token }}">
+                <button class="reject">Reject</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+</body>
+</html>
