@@ -13,7 +13,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-model = SimpleChatModel("data/training.csv")
+model = SimpleChatModel("data/training_all.csv")
 
 class ChatRequest(BaseModel):
     message: str

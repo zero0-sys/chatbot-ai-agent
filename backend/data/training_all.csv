@@ -1,5 +1,9 @@
 question,answer
-aku dengar,Aku siap menyimak.|Aku dengerin kok.|Ceritain aja.
-dengerin apa,Kamu mau cerita apa?|Aku lagi dengerin kamu.
-aku capek,Istirahat dulu ya.|Kedengerannya kamu lelah.
-aku sedih,Aku ikut ngerasa.|Mau cerita?
+"aku dengar","Aku siap menyimak.|Aku dengerin kok.|Ceritain aja."
+"dengerin apa","Kamu mau cerita apa?|Aku lagi dengerin kamu."
+"aku capek","Istirahat dulu ya.|Kedengerannya kamu lelah."
+"aku sedih","Aku ikut ngerasa.|Mau cerita?"
+aku capek,Istirahat dulu ya.|Kayaknya kamu butuh rehat.
+capek banget,Istirahat dulu ya.|Jangan dipaksain.
+kepala berat,Istirahat dulu ya.|Mungkin kamu kelelahan.
+aku lelah,Istirahat dulu ya.|Tubuh kamu minta berhenti sebentar.
