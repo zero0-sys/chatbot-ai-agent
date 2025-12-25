@@ -90,13 +90,13 @@
           <td>
             <div class="actions">
               <form method="post" action="/admin/approve">
-                <input type="hidden" name="index" value="{{ row.index }}">
+                <input type="hidden" name="row_id" value="{{ row.row_id }}">
                 <input type="hidden" name="token" value="{{ token }}">
                 <button class="approve">Approve</button>
               </form>
 
               <form method="post" action="/admin/reject">
-                <input type="hidden" name="index" value="{{ row.index }}">
+                <input type="hidden" name="row_id" value="{{ row.row_id }}">
                 <input type="hidden" name="token" value="{{ token }}">
                 <button class="reject">Reject</button>
               </form>
