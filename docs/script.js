@@ -17,7 +17,7 @@ const recordingStatus = document.getElementById("recordingStatus");
 // ===============================
 // BACKEND URL
 // ===============================
-const API_URL = "https://chatbot-ai-agent-production-03b2.up.railway.app/chat";
+const API_URL = "https://chatbot-ai-agent-production-8ade.up.railway.app/chat";
 
 // ===============================
 // USER ID
