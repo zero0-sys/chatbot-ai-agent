@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="theme-color" content="#020617">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <title>Matrix AI</title>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          animation: {
+            gradient: 'gradient 12s ease infinite',
+            pulse_fast: 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+          },
+          keyframes: {
+            gradient: {
+              '0%': { backgroundPosition: '0% 50%' },
+              '50%': { backgroundPosition: '100% 50%' },
+              '100%': { backgroundPosition: '0% 50%' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      touch-action: manipulation;
+    }
+
+    /* CHAT BUBBLE */
+    .message {
+      max-width: 85%;
+      padding: 12px 16px;
+      border-radius: 20px;
+      line-height: 1.5;
+      word-wrap: break-word;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+
+    .message.bot {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #e2e8f0;
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+
+    .message.user {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: white;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+      box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
+    }
+
+    /* GLITCH BACKGROUND */
+    .glitch-bg {
+      position: fixed;
+      inset: 0;
+      background:
+        repeating-linear-gradient(
+          0deg,
+          rgba(59,130,246,0.03),
+          rgba(59,130,246,0.03) 1px,
+          transparent 1px,
+          transparent 3px
+        );
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    /* Custom Scrollbar */
+    #chatContainer::-webkit-scrollbar {
+      width: 4px;
+    }
+    #chatContainer::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    #chatContainer::-webkit-scrollbar-thumb {
+      background: rgba(59, 130, 246, 0.2);
+      border-radius: 10px;
+    }
+
+    /* Camera Overlay */
+    #cameraOverlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: black;
+        z-index: 100;
+        flex-direction: column;
+    }
+    #videoPreview {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    /* Input Container Glassmorphism */
+    .input-container {
+        background: rgba(15, 23, 42, 0.8);
+        backdrop-filter: blur(20px);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .input-field {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .input-field:focus-within {
+        border-color: rgba(59, 130, 246, 0.5);
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    /* Textarea Auto-expand */
+    #userInput {
+        resize: none;
+        max-height: 150px;
+        overflow-y: auto;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-[#020617] text-white overflow-hidden">
+
+  <!-- GLITCH -->
+  <div class="glitch-bg"></div>
+
+  <!-- CAMERA OVERLAY -->
+  <div id="cameraOverlay">
+      <video id="videoPreview" autoplay playsinline></video>
+      
+      <!-- Camera Controls -->
+      <div class="absolute top-5 left-0 right-0 flex justify-between px-6">
+          <button id="switchCameraBtn" class="bg-black/40 backdrop-blur-md p-3 rounded-full border border-white/10 text-white active:scale-90 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m0 0H15" />
+              </svg>
+          </button>
+          <button id="closeCameraBtn" class="bg-black/40 backdrop-blur-md p-3 rounded-full border border-white/10 text-white active:scale-90 transition">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+          </button>
+      </div>
+
+      <div class="absolute bottom-10 left-0 right-0 flex flex-col items-center gap-6">
+          <div id="recordingStatus" class="hidden flex items-center gap-2 bg-red-600 px-3 py-1 rounded-full text-xs font-bold animate-pulse">
+              <span class="w-2 h-2 bg-white rounded-full"></span> REC
+          </div>
+          <div class="flex justify-center items-center gap-10">
+              <!-- Video Record Btn -->
+              <button id="recordBtn" class="p-4 bg-red-600/20 border border-red-600/40 rounded-full text-red-500 active:scale-90 transition">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
+                      <circle cx="12" cy="12" r="8" />
+                  </svg>
+              </button>
+              <!-- Capture Photo Btn -->
+              <button id="captureBtn" class="w-20 h-20 bg-white rounded-full border-8 border-white/30 active:scale-95 transition shadow-2xl"></button>
+              <div class="w-16"></div> <!-- Spacer -->
+          </div>
+      </div>
+  </div>
+
+  <!-- LOADING -->
+  <div id="loader"
+       class="fixed inset-0 z-50 flex flex-col items-center justify-center
+              bg-[#020617] text-blue-400 text-sm tracking-widest">
+    <div class="mb-4 animate-pulse">MATRIX NEURAL LINK</div>
+    <div class="w-48 h-0.5 bg-blue-900/50 rounded-full overflow-hidden">
+      <div class="h-full bg-blue-400 w-0" id="loadBar"></div>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div class="w-full max-w-md h-[100dvh]
+              mx-auto
+              flex flex-col overflow-hidden relative border-x border-white/5">
+
+    <!-- HEADER -->
+    <div class="shrink-0 z-20
+                flex items-center px-6 py-5
+                bg-[#020617]/80 backdrop-blur-md border-b border-white/5">
+      <div class="flex items-center gap-4">
+          <div class="relative">
+              <img src="matrix.gif" class="w-11 h-11 rounded-full border border-blue-500/30 object-cover" alt="Matrix">
+              <span class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[#020617] rounded-full"></span>
+          </div>
+          <div>
+            <div class="text-base font-semibold tracking-tight">MATRIX</div>
+            <div class="text-[10px] text-blue-400/70 uppercase tracking-widest font-medium">Neural Agent</div>
+          </div>
+      </div>
+    </div>
+
+    <!-- CHAT AREA -->
+    <div id="chatContainer"
+         class="flex-1 overflow-y-auto px-5 py-6 space-y-6
+                flex flex-col">
+      <div class="message bot">
+        Sistem aktif. Gue Matrix, ada yang perlu gue urus?
+      </div>
+    </div>
+
+    <!-- INPUT AREA -->
+    <div class="input-container px-4 py-5 pb-[calc(env(safe-area-inset-bottom)+1.25rem)]">
+      <form id="chatForm" class="flex items-end gap-3" onsubmit="return false;">
+        
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-1 mb-1">
+            <button id="cameraBtn" type="button" class="p-2.5 text-white/50 hover:text-blue-400 hover:bg-blue-400/10 rounded-full transition-all duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+            </button>
+            <button id="voiceBtn" type="button" class="p-2.5 text-white/50 hover:text-red-400 hover:bg-red-400/10 rounded-full transition-all duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Input Field (Textarea) -->
+        <div class="flex-1 input-field rounded-[22px] flex items-center px-4 py-1">
+            <textarea
+              id="userInput"
+              rows="1"
+              autocomplete="off"
+              placeholder="Ketik pesan..."
+              class="w-full bg-transparent py-3 text-sm outline-none text-white placeholder:text-white/20"></textarea>
+        </div>
+
+        <!-- Send Button -->
+        <button
+          id="sendBtn"
+          type="submit"
+          class="shrink-0 w-12 h-12
+                 flex items-center justify-center
+                 rounded-full
+                 bg-blue-600 text-white
+                 shadow-lg shadow-blue-600/20
+                 active:scale-90 transition-all duration-200">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5">
+            <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z" />
+          </svg>
+        </button>
+      </form>
+    </div>
+
+  </div>
+
+  <script src="./script.js"></script>
+
+  <script>
+    window.addEventListener("load", () => {
+      const loadBar = document.getElementById("loadBar");
+      loadBar.style.transition = "width 2s ease-in-out";
+      loadBar.style.width = "100%";
+      
+      setTimeout(() => {
+        const loader = document.getElementById("loader");
+        loader.style.opacity = "0";
+        loader.style.transition = "opacity 0.5s ease";
+        setTimeout(() => {
+            loader.style.display = "none";
+        }, 500);
+      }, 2200);
+    });
+  </script>
+
+</body>
+</html>
