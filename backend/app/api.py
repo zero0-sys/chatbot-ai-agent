@@ -1,24 +1,43 @@
-from fastapi import APIRouter
-from pydantic import BaseModel
-from app.model import ChatModel
-import csv
-from datetime import datetime
 import csv
 from pathlib import Path
+from fastapi import APIRouter
+from pydantic import BaseModel
+
+from app.model import ChatModel
 from app.text_utils import normalize
 
+# ===============================
+# PATH SETUP
+# ===============================
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
+DATA_DIR.mkdir(exist_ok=True)
+
 SUGGEST_FILE = DATA_DIR / "suggestions.csv"
 
-def save_suggestion(question: str, answer: str):
-    DATA_DIR.mkdir(exist_ok=True)
+# ===============================
+# MODEL INIT
+# ===============================
+model = ChatModel(DATA_DIR / "training_all.csv")
 
+router = APIRouter()
+
+# ===============================
+# REQUEST SCHEMA
+# ===============================
+class ChatRequest(BaseModel):
+    message: str
+
+# ===============================
+# HELPER: SAVE SUGGESTION
+# ===============================
+def save_suggestion(question: str, answer: str):
     is_new = not SUGGEST_FILE.exists()
 
     with open(SUGGEST_FILE, "a", newline="", encoding="utf-8") as f:
         writer = csv.writer(f, quoting=csv.QUOTE_ALL)
 
+        # tulis header kalau file baru
         if is_new:
             writer.writerow(["question", "answer"])
 
@@ -27,23 +46,18 @@ def save_suggestion(question: str, answer: str):
             answer
         ])
 
-LOG_FILE = "data/conversations.csv"
-
-def log_conversation(user_text, bot_reply):
-    with open(LOG_FILE, "a", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f, quoting=csv.QUOTE_ALL)
-        writer.writerow([
-            datetime.now().isoformat(),
-            user_text,
-            bot_reply
-        ])
-
-router = APIRouter()
-model = ChatModel("data/training_all.csv")
-
-class ChatRequest(BaseModel):
-    message: str
-
+# ===============================
+# CHAT ENDPOINT
+# ===============================
 @router.post("/chat")
 def chat(req: ChatRequest):
-    return {"reply": model.predict(req.message)}
+    reply, confidence = model.predict(req.message)
+
+    # confidence RENDAH → MASUK SUGGESTION
+    if confidence < 1:
+        save_suggestion(req.message, reply)
+
+    return {
+        "reply": reply,
+        "confidence": confidence
+    }
