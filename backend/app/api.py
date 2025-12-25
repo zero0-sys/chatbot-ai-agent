@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from app.model import ChatModel
 
 router = APIRouter()
-model = ChatModel("data/training.csv")
+model = ChatModel("data/training_all.csv")
 
 class ChatRequest(BaseModel):
     message: str
