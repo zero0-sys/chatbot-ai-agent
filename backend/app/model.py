@@ -1,3 +1,5 @@
+from pydoc import text
+from typing import Self
 import pandas as pd
 from app.text_utils import normalize, tokenize
 from app.algorithm import TokenScoringAlgorithm
@@ -8,7 +10,7 @@ class ChatModel:
         self.df["question"] = self.df["question"].str.lower()
         self.algorithm = TokenScoringAlgorithm()
 
-    def predict(self, text: str) -> str:
+    def predict(self, text: str):
         text = normalize(text)
         user_tokens = tokenize(text)
 
@@ -17,7 +19,7 @@ class ChatModel:
 
         for _, row in self.df.iterrows():
             q_tokens = tokenize(row["question"])
-            score = self.algorithm.score(user_tokens, q_tokens)
+            score = len(user_tokens & q_tokens)
 
             if score > best_score:
                 best_score = score
@@ -26,6 +28,10 @@ class ChatModel:
                 candidates.append(row["answer"])
 
         if best_score < 1:
-            return "Aku belum paham maksud kamu. Bisa jelasin dengan kata lain?"
+            return (
+                "Aku belum paham maksud kamu. Bisa jelasin dengan kata lain?",
+                0
+            )
 
-        return self.algorithm.choose_answer(candidates)
+        answer = self.algorithm.choose_answer(candidates)
+        return answer, best_score
