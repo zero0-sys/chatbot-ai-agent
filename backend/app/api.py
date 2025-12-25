@@ -13,7 +13,7 @@ from app.text_utils import normalize
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
 
-TRAIN_FILE = DATA_DIR / "training.csv"
+TRAIN_FILE = DATA_DIR / "training_all.csv"
 SUGGEST_FILE = DATA_DIR / "suggestions.csv"
 CONV_FILE = DATA_DIR / "conversations.csv"
 
