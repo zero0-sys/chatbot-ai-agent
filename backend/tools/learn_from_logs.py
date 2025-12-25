@@ -2,7 +2,7 @@ import csv
 import pandas as pd
 from app.text_utils import normalize
 
-TRAIN_FILE = "data/training.csv"
+TRAIN_FILE = "data/training_all.csv"
 LOG_FILE = "data/conversations.csv"
 OUT_FILE = "data/suggestions.csv"
 

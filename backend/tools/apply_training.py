@@ -1,6 +1,6 @@
 import pandas as pd
 
-TRAIN_FILE = "data/training.csv"
+TRAIN_FILE = "data/training_all.csv"
 SUGGEST_FILE = "data/suggestions.csv"
 
 df_train = pd.read_csv(TRAIN_FILE)

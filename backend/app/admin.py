@@ -5,7 +5,7 @@ from fastapi.templating import Jinja2Templates
 
 ADMIN_TOKEN = "admin123"
 SUGGEST_FILE = "data/suggestions.csv"
-TRAIN_FILE = "data/training.csv"
+TRAIN_FILE = "data/training_all.csv"
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
