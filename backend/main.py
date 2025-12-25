@@ -1,10 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from app.api import router
 
-from model import SimpleChatModel
-
-app = FastAPI(title="Matrix Chatbot")
+app = FastAPI(title="Matrix Neural Agent")
 
 app.add_middleware(
     CORSMiddleware,
@@ -13,17 +11,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-model = SimpleChatModel("data/training_all.csv")
-
-class ChatRequest(BaseModel):
-    message: str
-    userId: str | None = None
+app.include_router(router)
 
 @app.get("/")
-def root():
+def health():
     return {"status": "ok"}
-
-@app.post("/chat")
-def chat(req: ChatRequest):
-    reply = model.predict(req.message)
-    return {"reply": reply}
