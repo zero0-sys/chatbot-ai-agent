@@ -18,7 +18,24 @@ REPLACE_MAP = {
     "nggak": "tidak",
     "cape": "capek",
     "pusing": "capek",
-    "berat": "capek"
+    "berat": "capek",
+    "capek": "capek",
+    "capek": "capek",
+    "lelah": "capek",
+    "letih": "capek",
+    "ngos": "capek",
+    "drop": "capek"
+}
+
+MATH_WORDS = {
+    "tambah": "+",
+    "ditambah": "+",
+    "kurang": "-",
+    "dikurang": "-",
+    "kali": "*",
+    "dikali": "*",
+    "bagi": "/",
+    "dibagi": "/"
 }
 
 def normalize(text: str) -> str:
