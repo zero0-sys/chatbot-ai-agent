@@ -1,26 +1,41 @@
 import pandas as pd
+from pathlib import Path
 from fastapi import APIRouter, Request, Form, HTTPException
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 
+# ===============================
+# CONFIG
+# ===============================
 ADMIN_TOKEN = "admin123"
-SUGGEST_FILE = "data/suggestions.csv"
-TRAIN_FILE = "data/training_all.csv"
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+TEMPLATE_DIR = BASE_DIR / "templates"
+DATA_DIR = BASE_DIR / "data"
+
+SUGGEST_FILE = DATA_DIR / "suggestions.csv"
+TRAIN_FILE = DATA_DIR / "training_all.csv"
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory=str(TEMPLATE_DIR))
 
+# ===============================
+# HELPERS
+# ===============================
 def check_token(token: str):
     if token != ADMIN_TOKEN:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
+# ===============================
+# DASHBOARD
+# ===============================
 @router.get("/admin")
 def admin_dashboard(request: Request, token: str):
     check_token(token)
 
-    try:
+    if SUGGEST_FILE.exists():
         df = pd.read_csv(SUGGEST_FILE)
-    except FileNotFoundError:
+    else:
         df = pd.DataFrame(columns=["question", "answer"])
 
     rows = [
@@ -37,6 +52,9 @@ def admin_dashboard(request: Request, token: str):
         }
     )
 
+# ===============================
+# APPROVE
+# ===============================
 @router.post("/admin/approve")
 def approve(index: int = Form(...), token: str = Form(...)):
     check_token(token)
@@ -48,17 +66,24 @@ def approve(index: int = Form(...), token: str = Form(...)):
     df_train = pd.concat([df_train, row.to_frame().T], ignore_index=True)
 
     df_train.to_csv(TRAIN_FILE, index=False, quoting=1)
-    df_sug = df_sug.drop(index)
-    df_sug.to_csv(SUGGEST_FILE, index=False, quoting=1)
+    df_sug.drop(index).to_csv(SUGGEST_FILE, index=False, quoting=1)
 
-    return RedirectResponse(f"/admin?token={token}", status_code=303)
+    return RedirectResponse(
+        url=f"/admin?token={token}",
+        status_code=303
+    )
 
+# ===============================
+# REJECT
+# ===============================
 @router.post("/admin/reject")
 def reject(index: int = Form(...), token: str = Form(...)):
     check_token(token)
 
     df_sug = pd.read_csv(SUGGEST_FILE)
-    df_sug = df_sug.drop(index)
-    df_sug.to_csv(SUGGEST_FILE, index=False, quoting=1)
+    df_sug.drop(index).to_csv(SUGGEST_FILE, index=False, quoting=1)
 
-    return RedirectResponse(f"/admin?token={token}", status_code=303)
+    return RedirectResponse(
+        url=f"/admin?token={token}",
+        status_code=303
+    )
