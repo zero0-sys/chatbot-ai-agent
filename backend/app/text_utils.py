@@ -38,6 +38,13 @@ MATH_WORDS = {
     "dibagi": "/"
 }
 
+INTENT_HINTS = {
+    "mental": "mental",
+    "pikiran": "mental",
+    "kerja": "kerja",
+    "fisik": "fisik"
+}
+
 def normalize(text: str) -> str:
     text = text.lower()
     for k, v in REPLACE_MAP.items():

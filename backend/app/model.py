@@ -1,30 +1,22 @@
 import pandas as pd
+import random
 from app.text_utils import normalize, tokenize
 from app.algorithm import TokenScoringAlgorithm
 
 
 class ChatModel:
-    def __init__(self, csv_path: str):
-        # load training data
-        self.df = pd.read_csv(csv_path)
+    def __init__(self, csv_path):
+        self.df = pd.read_csv(csv_path, on_bad_lines="skip", engine="python")
+        self.last_answer = None  # 🔥 SIMPAN JAWABAN TERAKHIR
 
-        # pastikan kolom ada
         if "question" not in self.df.columns or "answer" not in self.df.columns:
             raise ValueError("CSV harus punya kolom: question, answer")
 
-        # normalisasi pertanyaan di awal
         self.df["question"] = self.df["question"].astype(str).str.lower()
 
-        # algoritma scoring
         self.algorithm = TokenScoringAlgorithm()
 
     def predict(self, text: str):
-        """
-        return:
-          - reply (str)
-          - confidence (int) -> dipakai buat learning decision
-        """
-
         # =========================
         # NORMALISASI USER INPUT
         # =========================
@@ -57,8 +49,25 @@ class ChatModel:
             )
 
         # =========================
-        # PILIH JAWABAN (ANTI NGULANG)
+        # 🔥 EXPAND JAWABAN (|)
         # =========================
-        final_answer = self.algorithm.choose_answer(candidates)
+        expanded_answers = []
+        for ans in candidates:
+            parts = [a.strip() for a in ans.split("|") if a.strip()]
+            expanded_answers.extend(parts)
+
+        # =========================
+        # 🔥 ANTI NGULANG JAWABAN
+        # =========================
+        if self.last_answer in expanded_answers and len(expanded_answers) > 1:
+            expanded_answers.remove(self.last_answer)
+
+        # =========================
+        # PILIH RANDOM
+        # =========================
+        final_answer = random.choice(expanded_answers)
+
+        # SIMPAN JAWABAN TERAKHIR
+        self.last_answer = final_answer
 
         return final_answer, best_score
